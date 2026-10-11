@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ScamShield AI prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap">
+<style>
+:root{--bg:#eef3f4;--sf:#fff;--ink:#12242c;--mu:#52666e;--ln:#d5e0e3;--ac:#00788a;--hi:#c23b3b;--hb:#fbe9e9;--md:#9a5b00;--mb:#fff2d9;--lo:#2e7d52;--lb:#e4f4ea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1417;--sf:#121f24;--ink:#e6f0f2;--mu:#9db2b9;--ln:#24383f;--ac:#43d5e8;--hi:#ff8a8a;--hb:#3a1c1f;--md:#f3b84d;--mb:#3a2d12;--lo:#6fd09a;--lb:#14301f}}
+:root[data-theme="dark"]{--bg:#0b1417;--sf:#121f24;--ink:#e6f0f2;--mu:#9db2b9;--ln:#24383f;--ac:#43d5e8;--hi:#ff8a8a;--hb:#3a1c1f;--md:#f3b84d;--mb:#3a2d12;--lo:#6fd09a;--lb:#14301f}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans","Noto Sans Kannada","Noto Sans Devanagari",system-ui,sans-serif}
+.wrap{max-width:1060px;margin:0 auto;padding:28px 20px 40px}
+h1{font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+.sub{margin:0 0 24px;color:var(--mu);max-width:60ch}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px;align-items:start}
+@media (max-width:800px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:18px}
+label{display:block;font-weight:600;margin-bottom:8px}
+textarea{width:100%;min-height:170px;resize:vertical;border:1px solid var(--ln);border-radius:10px;padding:12px;background:var(--bg);color:var(--ink);font:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.go{margin-top:12px;background:var(--ac);color:#fff;border:0;border-radius:10px;padding:11px 20px;font-weight:700}
+:root[data-theme="dark"] .go{color:#04181c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .go{color:#04181c}}
+.try{margin:16px 0 6px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:transparent;color:var(--ink);border:1px solid var(--ln);border-radius:999px;padding:6px 12px;font-size:.9rem}
+.chip:hover{border-color:var(--ac)}
+.note{color:var(--mu);font-size:.88rem;margin:16px 0 0}
+.empty{color:var(--mu);margin:0}
+.msg{background:var(--bg);border-radius:10px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 14px}
+mark{background:var(--hb);color:inherit;border-bottom:2px solid var(--hi);border-radius:2px;padding:0 1px}
+mark.on{background:var(--hi);color:#fff}
+.v{border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.v b{display:block;font-size:1.15rem}
+.v.high{background:var(--hb);color:var(--hi)}.v.med{background:var(--mb);color:var(--md)}.v.low{background:var(--lb);color:var(--lo)}
+.v span{color:var(--ink);font-size:.95rem}
+.bar{height:8px;background:var(--ln);border-radius:99px;overflow:hidden;margin:6px 0 4px}
+.bar i{display:block;height:100%;background:currentColor;transition:width .5s}
+.sc{font-size:.85rem;color:var(--mu);margin:0 0 16px}
+.lang{display:flex;gap:6px;margin-bottom:12px}
+.lang button{border:1px solid var(--ln);background:transparent;color:var(--ink);border-radius:8px;padding:5px 12px}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--sf);border-color:var(--ink)}
+h2{font-size:1rem;margin:14px 0 6px}
+ul{margin:0;padding-left:20px}li{margin:4px 0;cursor:default}
+li:hover,li:focus{color:var(--hi)}
+.act{background:var(--bg);border-radius:10px;padding:12px;margin:0}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ScamShield AI</h1>
+  <p class="sub">Paste an SMS or WhatsApp message in Kannada, Hindi or English, even mixed. See what looks risky, why, and what to do.</p>
+  <div class="grid">
+    <section class="card">
+      <label for="t">Message to check</label>
+      <textarea id="t" placeholder="Paste a message here"></textarea>
+      <button class="go" id="go">Check message</button>
+      <p class="try">Try a sample</p>
+      <div class="chips" id="chips"></div>
+      <p class="note">Checked in your browser. Nothing is uploaded. This prototype uses hand-written rules in place of the fine-tuned model.</p>
+    </section>
+    <section class="card" id="out" aria-live="polite"><p class="empty">Paste a message or pick a sample to see the result.</p></section>
+  </div>
+</div>
+<script>
+const S=[
+["Fake KYC (Kanglish)","Nimma bank KYC expire aagide. 24 gante olage update maadi, illa andre account block aagutte. Click: kyc-update-now.in"],
+["UPI refund (Hinglish)","Sir aapka refund ₹4,999 ready hai. Paise lene ke liye collect request accept karein aur UPI PIN enter karein: http://refund-claim.top/upi"],
+["Digital arrest","This is CBI cyber cell. A parcel in your name has illegal items. Join the video call immediately or an arrest warrant will be issued today."],
+["Fake job","Part time job! Earn ₹3000 per day from home. Just like videos. Join Telegram: t.me/earnfast247"],
+["Genuine OTP","Your OTP for transaction of Rs 1,250 at AMAZON is 482913. Do not share this OTP with anyone. -HDFC Bank"]];
+const R=[
+{id:"urgency",w:18,re:/within\s+\d+\s*(hours?|hrs?|minutes?|mins?)|\d+\s*(gante|ghante|घंटे|ಗಂಟೆ)|immediately|urgent(ly)?|right now|last chance|turant|jaldi|तुरंत|जल्दी|ತಕ್ಷಣ|ತುರ್ತು/gi,
+ r:{en:"Pushes you to act within hours.",kn:"ಕೆಲವೇ ಗಂಟೆಗಳಲ್ಲಿ ಕ್ರಮ ಕೈಗೊಳ್ಳಲು ಒತ್ತಡ ಹಾಕುತ್ತಿದೆ.",hi:"कुछ ही घंटों में कार्रवाई का दबाव बना रहा है।"}},
+{id:"threat",w:20,re:/block(ed)?|suspend(ed)?|deactivat\w*|disconnect\w*|frozen|freeze|expire[sd]?|बंद|ब्लॉक|ಬ್ಲಾಕ್/gi,
+ r:{en:"Threatens to block or cut off an account or service.",kn:"ಖಾತೆ ಅಥವಾ ಸೇವೆ ನಿಲ್ಲಿಸುವ ಬೆದರಿಕೆ ಹಾಕುತ್ತಿದೆ.",hi:"खाता या सेवा बंद करने की धमकी दे रहा है।"}},
+{id:"link",w:22,re:/https?:\/\/\S+|\b[a-z0-9-]+(\.[a-z0-9-]+)*\.(in|com|xyz|top|co|info|link|online|site|club|vip|me)\b\S*|bit\.ly\S*|tinyurl\S*/gi,
+ r:{en:"Has a link that is not an official bank or government site.",kn:"ಅಧಿಕೃತ ಬ್ಯಾಂಕ್ ಅಥವಾ ಸರ್ಕಾರಿ ಸೈಟ್ ಅಲ್ಲದ ಲಿಂಕ್ ಇದೆ.",hi:"ऐसा लिंक है जो आधिकारिक बैंक या सरकारी साइट का नहीं है।"}},
+{id:"kyc",w:25,re:/\bkyc\b|pan\s*(card)?\s*(update|link)|aadhaar\s*(update|link)|ಕೆವೈಸಿ|केवाईसी/gi,
+ ty:{en:"Fake KYC scam",kn:"ನಕಲಿ KYC ಸ್ಕ್ಯಾಮ್",hi:"फर्जी KYC स्कैम"},
+ r:{en:"Asks you to update KYC or documents through a message.",kn:"ಸಂದೇಶದ ಮೂಲಕ KYC ಅಥವಾ ದಾಖಲೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಹೇಳುತ್ತಿದೆ.",hi:"संदेश के जरिए KYC या दस्तावेज अपडेट करने को कह रहा है।"}},
+{id:"otp",w:30,re:/(send|share|tell|give|provide|enter|submit|reply)[^.\n]{0,25}(otp|pin|cvv|password|ಒಟಿಪಿ|ओटीपी|पिन)|(otp|pin|cvv|ओटीपी|पिन)\s+(enter|share|send|dalein|batayein)/gi,
+ ty:{en:"OTP / PIN theft",kn:"OTP / PIN ಕಳ್ಳತನ",hi:"OTP / PIN चोरी"},
+ r:{en:"Asks for your OTP, PIN or password. Banks never do.",kn:"OTP, PIN ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಕೇಳುತ್ತಿದೆ. ಬ್ಯಾಂಕ್‌ಗಳು ಎಂದಿಗೂ ಕೇಳುವುದಿಲ್ಲ.",hi:"OTP, PIN या पासवर्ड मांग रहा है। बैंक कभी नहीं मांगते।"}},
+{id:"upi",w:40,re:/collect request|accept (the )?request|to receive (money|payment|refund)[^.]{0,30}pin/gi,
+ ty:{en:"UPI collect-request scam",kn:"UPI ಕಲೆಕ್ಟ್ ವಿನಂತಿ ಸ್ಕ್ಯಾಮ್",hi:"UPI कलेक्ट रिक्वेस्ट स्कैम"},
+ r:{en:"Asks you to approve a request to “receive” money. Approving or entering a PIN only sends money out.",kn:"ಹಣ “ಪಡೆಯಲು” ವಿನಂತಿ ಒಪ್ಪಲು ಹೇಳುತ್ತಿದೆ. PIN ಹಾಕಿದರೆ ಹಣ ಹೋಗುತ್ತದೆ.",hi:"पैसे “पाने” के लिए अनुरोध मंजूर करने को कह रहा है। PIN डालने से पैसे कटते हैं।"}},
+{id:"auth",w:45,re:/\bcbi\b|cyber ?cell|customs|narcotics|digital arrest|arrest warrant|money laundering|ಪೊಲೀಸ್|पुलिस|गिरफ्तार/gi,
+ ty:{en:"Digital-arrest scam",kn:"ಡಿಜಿಟಲ್ ಅರೆಸ್ಟ್ ಸ್ಕ್ಯಾಮ್",hi:"डिजिटल अरेस्ट स्कैम"},
+ r:{en:"Uses police, CBI or customs authority to scare you.",kn:"ಪೊಲೀಸ್, CBI ಅಥವಾ ಕಸ್ಟಮ್ಸ್ ಹೆಸರಿನಲ್ಲಿ ಭಯ ಹುಟ್ಟಿಸುತ್ತಿದೆ.",hi:"पुलिस, CBI या कस्टम के नाम पर डराने की कोशिश है।"}},
+{id:"job",w:40,re:/work from home|part[- ]time (job|work)|earn (up to )?₹?\s?[\d,]+\s*(per|a|\/)\s*day|daily income|telegram|like (and|&) subscribe/gi,
+ ty:{en:"Fake job scam",kn:"ನಕಲಿ ಉದ್ಯೋಗ ಸ್ಕ್ಯಾಮ್",hi:"फर्जी नौकरी स्कैम"},
+ r:{en:"Promises easy daily income for simple tasks.",kn:"ಸುಲಭ ಕೆಲಸಕ್ಕೆ ದಿನಕ್ಕೆ ಹೆಚ್ಚು ಸಂಪಾದನೆಯ ಆಮಿಷ ಒಡ್ಡುತ್ತಿದೆ.",hi:"आसान काम के बदले रोज की कमाई का वादा कर रहा है।"}},
+{id:"lure",w:26,re:/lottery|lucky draw|jackpot|you (have )?won|prize|reward points|ಬಹುಮಾನ|इनाम|लॉटरी/gi,
+ ty:{en:"Prize or lottery scam",kn:"ಬಹುಮಾನ ಅಥವಾ ಲಾಟರಿ ಸ್ಕ್ಯಾಮ್",hi:"इनाम या लॉटरी स्कैम"},
+ r:{en:"Offers a prize or reward to lure you.",kn:"ಬಹುಮಾನ ಅಥವಾ ಹಣದ ಆಮಿಷ ತೋರಿಸುತ್ತಿದೆ.",hi:"इनाम या रकम का लालच दे रहा है।"}}];
+const OFFICIAL=/\.(gov|nic)\.in|sbi\.co\.in|hdfcbank\.com|icicibank\.com|npci\.org\.in/i;
+const U={why:{en:"Why it looks risky",kn:"ಏಕೆ ಅಪಾಯಕಾರಿ",hi:"क्यों जोखिम भरा है"},do:{en:"What to do",kn:"ಏನು ಮಾಡಬೇಕು",hi:"क्या करें"},sc:{en:"Risk score",kn:"ಅಪಾಯ ಅಂಕ",hi:"जोखिम स्कोर"},none:{en:"Nothing in this message matched a scam pattern.",kn:"ಈ ಸಂದೇಶದಲ್ಲಿ ಸ್ಕ್ಯಾಮ್ ಮಾದರಿ ಕಂಡುಬಂದಿಲ್ಲ.",hi:"इस संदेश में कोई स्कैम पैटर्न नहीं मिला।"},sus:{en:"Suspicious message",kn:"ಅನುಮಾನಾಸ್ಪದ ಸಂದೇಶ",hi:"संदिग्ध संदेश"}};
+const V={
+high:{c:"high",l:{en:"High risk: likely a scam",kn:"ಹೆಚ್ಚು ಅಪಾಯ: ಸ್ಕ್ಯಾಮ್ ಆಗಿರುವ ಸಾಧ್ಯತೆ",hi:"उच्च जोखिम: धोखाधड़ी की संभावना"},
+ a:{en:"Don't click the link or share any OTP or PIN. Report it at cybercrime.gov.in or call 1930. If you already paid, call 1930 right away.",kn:"ಲಿಂಕ್ ಕ್ಲಿಕ್ ಮಾಡಬೇಡಿ, OTP ಅಥವಾ PIN ಹಂಚಿಕೊಳ್ಳಬೇಡಿ. cybercrime.gov.in ನಲ್ಲಿ ದೂರು ನೀಡಿ ಅಥವಾ 1930 ಗೆ ಕರೆ ಮಾಡಿ. ಈಗಾಗಲೇ ಹಣ ಕಳುಹಿಸಿದ್ದರೆ ತಕ್ಷಣ 1930 ಗೆ ಕರೆ ಮಾಡಿ.",hi:"लिंक पर क्लिक न करें और OTP या PIN साझा न करें। cybercrime.gov.in पर शिकायत करें या 1930 पर कॉल करें। पैसे भेज चुके हैं तो तुरंत 1930 पर कॉल करें।"}},
+med:{c:"med",l:{en:"Be careful: some scam signs",kn:"ಎಚ್ಚರಿಕೆ: ಕೆಲವು ಸ್ಕ್ಯಾಮ್ ಸೂಚನೆಗಳಿವೆ",hi:"सावधान: कुछ स्कैम संकेत हैं"},
+ a:{en:"Don't act on it yet. Check with your bank's official app or the number on your card. If it is a scam, report it at cybercrime.gov.in or call 1930.",kn:"ಈಗಲೇ ಏನೂ ಮಾಡಬೇಡಿ. ಬ್ಯಾಂಕ್‌ನ ಅಧಿಕೃತ ಆ್ಯಪ್ ಅಥವಾ ಕಾರ್ಡ್‌ನ ಸಂಖ್ಯೆಯ ಮೂಲಕ ಪರಿಶೀಲಿಸಿ. ಸ್ಕ್ಯಾಮ್ ಆಗಿದ್ದರೆ cybercrime.gov.in ಅಥವಾ 1930 ಗೆ ತಿಳಿಸಿ.",hi:"अभी कुछ न करें। बैंक के आधिकारिक ऐप या कार्ड पर छपे नंबर से जांचें। स्कैम निकले तो cybercrime.gov.in या 1930 पर बताएं।"}},
+low:{c:"low",l:{en:"No clear scam signs",kn:"ಸ್ಪಷ್ಟ ಸ್ಕ್ಯಾಮ್ ಸೂಚನೆ ಇಲ್ಲ",hi:"कोई स्पष्ट स्कैम संकेत नहीं"},
+ a:{en:"Still, never share an OTP or PIN, and check unknown links before opening them.",kn:"ಆದರೂ OTP ಅಥವಾ PIN ಯಾರಿಗೂ ಹಂಚಿಕೊಳ್ಳಬೇಡಿ ಮತ್ತು ಅಪರಿಚಿತ ಲಿಂಕ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",hi:"फिर भी OTP या PIN किसी से साझा न करें और अज्ञात लिंक खोलने से पहले जांचें।"}}};
+let lg="en",cur=null;
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function analyze(text){
+  const clean=text.replace(/(do not|don't|dont|never)\s+share[^.\n]*/gi,m=>" ".repeat(m.length));
+  const hits=[],spans=[];
+  for(const r of R){
+    r.re.lastIndex=0;let m,f=false;
+    while((m=r.re.exec(clean))){
+      if(!m[0]){r.re.lastIndex++;continue}
+      if(r.id==="link"&&OFFICIAL.test(m[0]))continue;
+      f=true;spans.push([m.index,m.index+m[0].length,r.id]);
+    }
+    if(f)hits.push(r);
+  }
+  let score=hits.reduce((a,h)=>a+h.w,0)+(hits.length>=3?10:0);score=Math.min(score,98);
+  const top=hits.filter(h=>h.ty).sort((a,b)=>b.w-a.w)[0];
+  return{text,hits,spans,score,top,lvl:score>=60?"high":score>=30?"med":"low"};
+}
+function marked(a){
+  const sp=a.spans.sort((x,y)=>x[0]-y[0]);let out="",i=0;
+  for(const [s,e,id] of sp){if(s<i)continue;out+=esc(a.text.slice(i,s))+'<mark data-r="'+id+'">'+esc(a.text.slice(s,e))+"</mark>";i=e}
+  return out+esc(a.text.slice(i));
+}
+function render(){
+  if(!cur)return;
+  const a=cur,v=V[a.lvl];
+  const type=a.top?a.top.ty[lg]:(a.hits.length?U.sus[lg]:"");
+  const reasons=a.hits.length?"<ul>"+a.hits.map(h=>'<li tabindex="0" data-r="'+h.id+'">'+h.r[lg]+"</li>").join("")+"</ul>":"<p class='empty'>"+U.none[lg]+"</p>";
+  $("out").innerHTML=
+   '<div class="lang" role="group" aria-label="Explanation language">'+[["en","English"],["kn","ಕನ್ನಡ"],["hi","हिन्दी"]].map(([k,n])=>'<button data-l="'+k+'" aria-pressed="'+(k===lg)+'">'+n+"</button>").join("")+"</div>"+
+   '<p class="msg">'+marked(a)+"</p>"+
+   '<div class="v '+v.c+'"><b>'+v.l[lg]+"</b>"+(type?"<span>"+type+"</span>":"")+"</div>"+
+   '<div class="v '+v.c+'" style="padding:0;background:none"><div class="bar"><i style="width:'+a.score+'%"></i></div></div>'+
+   '<p class="sc">'+U.sc[lg]+": "+a.score+" / 100</p>"+
+   "<h2>"+U.why[lg]+"</h2>"+reasons+
+   "<h2>"+U.do[lg]+'</h2><p class="act">'+v.a[lg]+"</p>";
+}
+function run(){const t=$("t").value.trim();if(!t){$("t").focus();return}cur=analyze(t);render()}
+$("go").onclick=run;
+$("t").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter")run()});
+$("chips").innerHTML=S.map((s,i)=>'<button class="chip" data-i="'+i+'">'+s[0]+"</button>").join("");
+$("chips").onclick=e=>{const b=e.target.closest("[data-i]");if(b){$("t").value=S[b.dataset.i][1];run()}};
+$("out").onclick=e=>{const b=e.target.closest("[data-l]");if(b){lg=b.dataset.l;render()}};
+function hl(e,on){const li=e.target.closest("li[data-r]");if(li)document.querySelectorAll('mark[data-r="'+li.dataset.r+'"]').forEach(m=>m.classList.toggle("on",on))}
+$("out").addEventListener("mouseover",e=>hl(e,true));$("out").addEventListener("mouseout",e=>hl(e,false));
+$("out").addEventListener("focusin",e=>hl(e,true));$("out").addEventListener("focusout",e=>hl(e,false));
+</script>
+</body>
+</html>
